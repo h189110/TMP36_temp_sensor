@@ -21,7 +21,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+  #include <string.h> 
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -42,17 +42,14 @@
 /* Private variables ---------------------------------------------------------*/
 ADC_HandleTypeDef hadc1;
 
-UART_HandleTypeDef huart3;
-
 /* USER CODE BEGIN PV */
-
+  UART_HandleTypeDef huart3;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_ADC1_Init(void);
-static void MX_USART3_UART_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -70,6 +67,10 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
+
+    uint32_t adc_value = 0;
+    float voltage = 0.0;
+    float temp = 0.0;
 
   /* USER CODE END 1 */
 
@@ -92,9 +93,10 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ADC1_Init();
-  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  // Define the message
+  char transmit_buffer[100];
+  uint8_t timeout = 100;
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -104,6 +106,22 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+
+    HAL_ADC_Start(&hadc1); // Start ADC conversion
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY); // Wait for conversion to complete
+    adc_value = HAL_ADC_GetValue(&hadc1); // Get the converted value
+
+    // Convert ADC value to voltage
+    // V_ref is 3.3V and 12-bit resolution (4096 levels)
+    voltage = (float)adc_value * (3.3f / 4095.0f);
+
+    temp = (voltage - 0.5) * 100.0; // Convert voltage to temperature
+
+    sprintf(transmit_buffer, "ADC Value: %lu, Voltage: %.2f, temp: %.2f V\r\n", adc_value, voltage, temp);
+
+    HAL_Delay(100); // Small delay 
+
+
   }
   /* USER CODE END 3 */
 }
@@ -215,41 +233,6 @@ static void MX_ADC1_Init(void)
 }
 
 /**
-  * @brief USART3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART3_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART3_Init 0 */
-
-  /* USER CODE END USART3_Init 0 */
-
-  /* USER CODE BEGIN USART3_Init 1 */
-
-  /* USER CODE END USART3_Init 1 */
-  huart3.Instance = USART3;
-  huart3.Init.BaudRate = 115200;
-  huart3.Init.WordLength = UART_WORDLENGTH_8B;
-  huart3.Init.StopBits = UART_STOPBITS_1;
-  huart3.Init.Parity = UART_PARITY_NONE;
-  huart3.Init.Mode = UART_MODE_TX_RX;
-  huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart3.Init.OverSampling = UART_OVERSAMPLING_16;
-  huart3.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
-  huart3.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
-  if (HAL_UART_Init(&huart3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART3_Init 2 */
-
-  /* USER CODE END USART3_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -263,7 +246,6 @@ static void MX_GPIO_Init(void)
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 

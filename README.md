@@ -7,7 +7,7 @@ Oppgaven går ut på å lese analoge data fra en TMP36 temperatursensor via ADC,
 - det er lagd en void MX_USART3_UART_Init(void) funksjon som initaliserer usart kommunikasjon, hvor denne ikke var definert eller deklarert per default
 
   flow
-[Se flytdiagram](flow_chart.drawio)
+![Se flytdiagram](flow_chart.drawio.png)
 
 
   exsempel output:

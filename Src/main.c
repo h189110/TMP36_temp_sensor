@@ -19,9 +19,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+
+
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
   #include <string.h> 
+  #include <stdio.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,7 +60,21 @@ static void MX_ADC1_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+void MX_USART3_UART_Init(void)
+{
+    huart3.Instance = USART3;
+    huart3.Init.BaudRate = 115200;
+    huart3.Init.WordLength = UART_WORDLENGTH_8B;
+    huart3.Init.StopBits = UART_STOPBITS_1;
+    huart3.Init.Parity = UART_PARITY_NONE;
+    huart3.Init.Mode = UART_MODE_TX_RX;
+    huart3.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+    huart3.Init.OverSampling = UART_OVERSAMPLING_16;
+    if (HAL_UART_Init(&huart3) != HAL_OK)
+    {
+        Error_Handler();
+    }
+}
 /* USER CODE END 0 */
 
 /**
@@ -93,6 +111,7 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_ADC1_Init();
+  MX_USART3_UART_Init();
   /* USER CODE BEGIN 2 */
   // Define the message
   char transmit_buffer[100];
@@ -118,7 +137,7 @@ int main(void)
     temp = (voltage - 0.5) * 100.0; // Convert voltage to temperature
 
     sprintf(transmit_buffer, "ADC Value: %lu, Voltage: %.2f, temp: %.2f V\r\n", adc_value, voltage, temp);
-
+    HAL_UART_Transmit(&huart3, (uint8_t*)transmit_buffer, strlen(transmit_buffer), timeout);
     HAL_Delay(100); // Small delay 
 
 
